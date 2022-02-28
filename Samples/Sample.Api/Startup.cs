@@ -37,11 +37,26 @@ namespace Sample.Api
             #endregion
 
             #region Mass Transit
-            services.AddMediator(cfg =>
+            services.AddMassTransit(cfg =>
             {
-                cfg.AddConsumer<SubmitOrderConsumer>();
+                cfg.UsingRabbitMq((context, busCfg) =>
+                {
+                    busCfg.Host("rabbitmq://localhost", h =>
+                    {
+                        h.Username("tung");
+                        h.Password("123456");
+                    });
+
+                    busCfg.ConfigureEndpoints(context);
+
+                });
+
+                cfg.SetKebabCaseEndpointNameFormatter();
+
                 cfg.AddRequestClient<SubmitOrder>();
             });
+
+            services.AddMassTransitHostedService();
             #endregion
         }
 
