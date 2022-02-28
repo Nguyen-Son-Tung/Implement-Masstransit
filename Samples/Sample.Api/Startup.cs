@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Sample.Components.Consumers;
+using Sample.Components.StateMachines;
 using Sample.Contracts;
 using System;
 using System.Collections.Generic;
@@ -53,6 +54,13 @@ namespace Sample.Api
                 });
 
                 cfg.SetKebabCaseEndpointNameFormatter();
+
+                cfg.AddSagaStateMachine<OrderStateMachine, OrderState>()
+                    .RedisRepository(r => {
+                        r.DatabaseConfiguration("127.0.0.1:6379");
+                    });
+
+                cfg.AddRequestClient<CheckOrder>();
 
                 cfg.AddConsumer<SubmitOrderConsumer>();
             });

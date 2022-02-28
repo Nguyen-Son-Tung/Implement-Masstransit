@@ -17,7 +17,7 @@ namespace Sample.Components.Consumers
         {
             _logger = logger;
         }
-        public Task Consume(ConsumeContext<SubmitOrder> context)
+        public async Task Consume(ConsumeContext<SubmitOrder> context)
         {
             var message = context.Message;
             _logger.LogDebug($"SubmitOrderConsumer: {context.Message.CustomerNumber}");
@@ -46,10 +46,17 @@ namespace Sample.Components.Consumers
             */
             #endregion
 
+
+            await context.Publish<OrderSubmitted>(new
+            {
+
+                OrderId = context.Message.OrderId,
+                Timestamp = context.Message.Timestamp,
+                CustomerNumber = context.Message.CustomerNumber
+            });
+
             _logger.LogInformation("Received a message from endpoint");
             _logger.LogInformation($"With data {message.OrderId} - {message.CustomerNumber}");
-            return Task.CompletedTask;
-
         }
     }
 }
