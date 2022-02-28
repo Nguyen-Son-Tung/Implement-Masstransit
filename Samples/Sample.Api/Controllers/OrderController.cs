@@ -1,7 +1,9 @@
 ﻿using MassTransit;
+using MassTransit.Definition;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Sample.Components.Consumers;
 using Sample.Contracts;
 using System;
 using System.Collections.Generic;
@@ -15,35 +17,34 @@ namespace Sample.Api.Controllers
     public class OrderController : ControllerBase
     {
         readonly ILogger<OrderController> _logger;
-        readonly IRequestClient<SubmitOrder> _submitOrderRequestClient;
+        readonly ISendEndpointProvider _endpointProvider;
 
         public OrderController(ILogger<OrderController> logger
-            , IRequestClient<SubmitOrder> submitOrderRequestClient)
+            , ISendEndpointProvider endpointProvider)
         {
             _logger = logger;
-            _submitOrderRequestClient = submitOrderRequestClient;
+            _endpointProvider = endpointProvider;
         }
         [HttpPost]
         public async Task<ActionResult> Post(Guid id, string customerNumber)
         {
-            var (accepted, rejected) = await _submitOrderRequestClient.GetResponse<OrderSubmissionAccepted, OrderSubmissionRejected>(new
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> Put(Guid id, string customerNumber)
+        {
+            var endpoint = await _endpointProvider.GetSendEndpoint(
+                new Uri($"queue:{KebabCaseEndpointNameFormatter.Instance.Consumer<SubmitOrderConsumer>()}"));
+
+            await endpoint.Send<SubmitOrder>(new
             {
-                // it mean this below object is a context is sent to Consumer, so its type is SubmitOrder
-                // nghĩa là cái đối tượng truyền vào trong tham số bên dưới này, nó là context cho thằng Consumer ==> Nó có phải có kiểu là SubmitOrder
                 OrderId = id,
                 InVar.Timestamp,
                 CustomerNumber = customerNumber
             });
-            if (accepted.IsCompletedSuccessfully)
-            {
-                var response = await accepted;
-                return Accepted(response.Message);
-            }
-            else
-            {
-                var response = await rejected;
-                return BadRequest(response.Message);
-            }
+
+            return NoContent();
         }
     }
 }

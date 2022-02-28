@@ -38,6 +38,8 @@ namespace Sample.Service
                     cfg.AddConsumersFromNamespaceContaining<SubmitOrderConsumer>();
 
                     cfg.SetKebabCaseEndpointNameFormatter();
+
+
                 });
 
                 service.AddMassTransitHostedService();

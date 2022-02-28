@@ -1,4 +1,5 @@
 using MassTransit;
+using MassTransit.Definition;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +54,7 @@ namespace Sample.Api
 
                 cfg.SetKebabCaseEndpointNameFormatter();
 
-                cfg.AddRequestClient<SubmitOrder>();
+                cfg.AddConsumer<SubmitOrderConsumer>();
             });
 
             services.AddMassTransitHostedService();

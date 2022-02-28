@@ -17,9 +17,13 @@ namespace Sample.Components.Consumers
         {
             _logger = logger;
         }
-        public async Task Consume(ConsumeContext<SubmitOrder> context)
+        public Task Consume(ConsumeContext<SubmitOrder> context)
         {
+            var message = context.Message;
             _logger.LogDebug($"SubmitOrderConsumer: {context.Message.CustomerNumber}");
+
+            #region For Request Client
+            /*
             if (context.Message.CustomerNumber.Contains("TEST"))
             {
                 await context.RespondAsync<OrderSubmissionRejected>(new
@@ -39,6 +43,13 @@ namespace Sample.Components.Consumers
                 OrderId = context.Message.OrderId,
                 CustomerNumber = context.Message.CustomerNumber
             });
+            */
+            #endregion
+
+            _logger.LogInformation("Received a message from endpoint");
+            _logger.LogInformation($"With data {message.OrderId} - {message.CustomerNumber}");
+            return Task.CompletedTask;
+
         }
     }
 }
